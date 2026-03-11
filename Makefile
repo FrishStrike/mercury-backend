@@ -39,10 +39,19 @@ help:
 	@echo "    make migrate-version - Show current migration version"
 	@echo "    make db-shell        - Open psql shell"
 	@echo ""
+	@echo "  Starting Services"
+	@echo "    make run-catalog     - Run catalog service"
+	@echo "    make run-order       - Run order service"
+	@echo "    make run-payment     - Run payment service"
+	@echo ""
 	@echo "  Build & Run:"
 	@echo "    make build           - Build all services"
 	@echo "    make run             - Run all services locally"
 	@echo "    make clean           - Clean build artifacts"
+	@echo ""
+	@echo "  Proto:"
+	@echo "    make proto-update    - Update git submodule"
+	@echo "    make proto-gen       - Generate files"
 	@echo ""
 	@echo "  Tests:"
 	@echo "    make test            - Run unit tests"
@@ -115,6 +124,21 @@ db-shell:
 	docker exec -it mercury-postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Run Services
+# ─────────────────────────────────────────────────────────────────────────────
+run-catalog:
+	@echo "Starting Catalog Service..."
+	go run ./cmd/catalog-service
+
+run-order:
+	@echo "Starting Order Service..."
+	go run ./cmd/order-service
+
+run-payment:
+	@echo "Starting Payment Service..."
+	go run ./cmd/payment-service
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Build & Run
 # ─────────────────────────────────────────────────────────────────────────────
 build:
@@ -140,6 +164,21 @@ clean:
 	rmdir /s /q bin 2>nul || true
 	go clean -cache
 	@echo "Clean complete"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Proto
+# ─────────────────────────────────────────────────────────────────────────────
+proto-update:
+	@echo "Updating proto submodule..."
+	git submodule update --remote --merge
+	@echo "Proto submodule updated"
+
+proto-gen:
+	@echo "Generating proto code..."
+	cd api/proto && buf generate && cd ../..
+	@echo "Proto generation complete"
+	@echo "Proto generation complete"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests
