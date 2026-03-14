@@ -6,7 +6,7 @@ import (
 
 	"github.com/frishstrike/mercury-backend/internal/catalog-service/domain"
 	"github.com/frishstrike/mercury-backend/internal/catalog-service/domain/entity"
-	"github.com/frishstrike/mercury-backend/internal/catalog-service/domain/repository"
+	"github.com/frishstrike/mercury-backend/internal/catalog-service/repository"
 	"github.com/google/uuid"
 )
 
