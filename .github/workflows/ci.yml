@@ -151,7 +151,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          dockerfile: cmd/catalog-service/Dockerfile
+          file: cmd/catalog-service/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}/catalog-service:latest
           cache-from: type=gha
@@ -161,7 +161,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          dockerfile: cmd/auth-service/Dockerfile
+          file: cmd/auth-service/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}/auth-service:latest
           cache-from: type=gha
