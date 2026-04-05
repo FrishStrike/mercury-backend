@@ -38,3 +38,7 @@ docs/
 # Temp
 tmp/
 temp/
+
+*.exe
+bin/
+auth-service.exe
