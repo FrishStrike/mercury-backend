@@ -107,7 +107,13 @@ logs-postgres:
 # ─────────────────────────────────────────────────────────────────────────────
 migrate-up:
 	@echo "Applying migrations..."
-	migrate -path $(MIGRATIONS_PATH) -database "$(DATABASE_URL)" up
+	docker run --rm \
+		--network mercury-backend_mercury-network \
+		-v "$(shell pwd)/migrations:/migrations" \
+		migrate/migrate \
+		-path=/migrations/sql \
+		-database="postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@mercury-postgres:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable" \
+		up
 	@echo "Migrations applied"
 
 migrate-down:
@@ -122,6 +128,24 @@ migrate-version:
 db-shell:
 	@echo "Connecting to PostgreSQL..."
 	docker exec -it mercury-postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Production
+# ─────────────────────────────────────────────────────────────────────────────
+prod-up:
+	@echo "Starting production environment..."
+	docker-compose -f docker-compose.prod.yml up -d
+	@echo "Production is up!"
+
+prod-down:
+	@echo "Stopping production environment..."
+	docker-compose -f docker-compose.prod.yml down
+	@echo "Production stopped"
+
+prod-build:
+	@echo "Building production images..."
+	docker-compose -f docker-compose.prod.yml build --no-cache
+	@echo "Build complete!"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Run Services

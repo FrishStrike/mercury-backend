@@ -1,0 +1,21 @@
+name: CD Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to server
+        run: |
+          echo "Deploying version ${{ github.ref_name }}"
+          echo "Add your deployment steps here"
+          echo "Example: SSH to server and run docker-compose pull && docker-compose up -d"

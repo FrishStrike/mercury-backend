@@ -1,43 +1,75 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "common/v1/common.proto",
-    "version": "version not set"
+    "title": "Mercury Catalog API",
+    "version": "1.0"
   },
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
-  "paths": {},
-  "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "@type": {
-          "type": "string"
-        }
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/api/v1/products": {
+      "get": {
+        "summary": "List products",
+        "tags": ["Products"],
+        "parameters": [
+          {"name": "page", "in": "query", "type": "integer"},
+          {"name": "page_size", "in": "query", "type": "integer"},
+          {"name": "category", "in": "query", "type": "string"},
+          {"name": "only_active", "in": "query", "type": "boolean"}
+        ],
+        "responses": {"200": {"description": "OK"}}
       },
-      "additionalProperties": {}
+      "post": {
+        "summary": "Create product",
+        "tags": ["Products"],
+        "parameters": [{"name": "body", "in": "body", "schema": {"$ref": "#/definitions/CreateProductRequest"}}],
+        "responses": {"200": {"description": "OK"}}
+      }
     },
-    "rpcStatus": {
+    "/api/v1/products/{id}": {
+      "get": {
+        "summary": "Get product",
+        "tags": ["Products"],
+        "parameters": [{"name": "id", "in": "path", "required": true, "type": "string"}],
+        "responses": {"200": {"description": "OK"}}
+      },
+      "put": {
+        "summary": "Update product",
+        "tags": ["Products"],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "type": "string"},
+          {"name": "body", "in": "body", "schema": {"$ref": "#/definitions/UpdateProductRequest"}}
+        ],
+        "responses": {"200": {"description": "OK"}}
+      },
+      "delete": {
+        "summary": "Delete product",
+        "tags": ["Products"],
+        "parameters": [{"name": "id", "in": "path", "required": true, "type": "string"}],
+        "responses": {"200": {"description": "OK"}}
+      }
+    }
+  },
+  "definitions": {
+    "CreateProductRequest": {
       "type": "object",
       "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "price": {"type": "integer", "format": "int64"},
+        "stock": {"type": "integer", "format": "int32"},
+        "category": {"type": "string"}
+      }
+    },
+    "UpdateProductRequest": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "price": {"type": "integer", "format": "int64"},
+        "stock": {"type": "integer", "format": "int32"},
+        "category": {"type": "string"},
+        "is_active": {"type": "boolean"}
       }
     }
   }

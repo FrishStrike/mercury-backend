@@ -1,49 +1,40 @@
-# Binaries
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-bin/
-dist/
-
-# Test binary
-*.test
-
-# Output of go coverage
-*.out
-coverage.html
-coverage.out
-
-# Dependency directories
-vendor/
+# Git
+.git
+.gitignore
+.gitmodules
 
 # IDE
-.idea/
-.vscode/
+.idea
+.vscode
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Environment
+# Build artifacts
+bin/
+*.exe
+*.dll
+*.so
+
+# Test files
+coverage.out
+coverage.html
+tests/
+
+# Docs
+*.md
+docs/
+
+# Env files
 .env
-.env.local
-.env.*.local
+.env.*
 
 # Logs
 *.log
-logs/
 
-# Docker
-docker-compose.override.yml
-
-# Temporary files
+# Temp
 tmp/
 temp/
-
-# Go workspace
-go.work

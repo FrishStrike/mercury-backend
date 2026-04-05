@@ -18,6 +18,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 
 	"google.golang.org/grpc/reflection"
 )
@@ -115,6 +116,12 @@ func runHTTPGateway(logger *slog.Logger, grpcHandler *grpcd.Handler) error {
 
 	mux := runtime.NewServeMux(
 		runtime.WithErrorHandler(runtime.DefaultHTTPErrorHandler),
+		runtime.WithForwardResponseOption(func(ctx context.Context, w http.ResponseWriter, msg proto.Message) error {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			return nil
+		}),
 	)
 
 	if err := catalogv1.RegisterCatalogServiceHandlerServer(ctx, mux, grpcHandler); err != nil {
@@ -122,24 +129,39 @@ func runHTTPGateway(logger *slog.Logger, grpcHandler *grpcd.Handler) error {
 		return err
 	}
 
-	// Основной mux
 	httpMux := http.NewServeMux()
-
-	// API endpoints
 	httpMux.Handle("/", mux)
-
-	// Swagger UI
-	httpMux.Handle("/swagger/", http.StripPrefix("/swagger/", http.FileServer(http.Dir("cmd/catalog-service/swagger"))))
-
-	// Health check
+	httpMux.Handle("/swagger/", http.StripPrefix("/swagger/", http.FileServer(http.Dir("swagger"))))
 	httpMux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
+	// Middleware для логирования реального IP
+	withLogging := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Получаем реальный IP из заголовков Nginx
+			realIP := r.Header.Get("X-Real-IP")
+			if realIP == "" {
+				realIP = r.Header.Get("X-Forwarded-For")
+			}
+			if realIP == "" {
+				realIP = r.RemoteAddr
+			}
+
+			logger.Info("http request",
+				"method", r.Method,
+				"path", r.URL.Path,
+				"ip", realIP,
+			)
+
+			next.ServeHTTP(w, r)
+		})
+	}
+
 	httpServer := &http.Server{
 		Addr:         ":8080",
-		Handler:      httpMux,
+		Handler:      withLogging(httpMux),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -154,7 +176,6 @@ func runHTTPGateway(logger *slog.Logger, grpcHandler *grpcd.Handler) error {
 
 	return nil
 }
-
 func waitForShutdown(logger *slog.Logger, grpcServer *grpc.Server) error {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
